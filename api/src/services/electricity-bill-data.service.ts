@@ -12,15 +12,7 @@ export class ElectricityBillDataService {
   async getAll(
     filter?: Filter<ElectricityConsumption>,
   ): Promise<Array<ElectricityConsumption>> {
-    const response: ElectricityConsumption[] = [];
-
-    let filterTracker: Filter<ElectricityConsumption>;
-
-    if (filter) {
-      filterTracker = JSON.parse(JSON.stringify(filter));
-    }
-    
-    await csvtojson().fromFile(this.ELECTRICITY_BILL_DATA_PATH);
+    const response = await csvtojson().fromFile(this.ELECTRICITY_BILL_DATA_PATH);
 
     return response;
   }
