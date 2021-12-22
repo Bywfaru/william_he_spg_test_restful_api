@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Container, InputGroup, Stack, FormLabel, FormCheck, FormControl } from 'react-bootstrap';
 import * as d3 from 'd3';
 import { BillData, getBillData } from './functions';
@@ -11,6 +11,7 @@ interface ElectricityKwhData {
 
 export default function Home() {
     const [billData, setBillData] = useState<BillData>();
+    const [size, setSize] = useState({width: 0, height: 0});
     const [isLoading, setIsLoading] = useState<Boolean>(true);
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
@@ -27,14 +28,26 @@ export default function Home() {
             });
     }, []);
 
+    useLayoutEffect(() => {
+        if (containerRef.current) setSize({
+            ...size,
+            width: containerRef.current.clientWidth
+        });
+    }, []);
+
     useEffect(() => {
         if (typeof billData === 'object') {
-            const width = 1200;
-            const height = 600;
+            const container = d3.select(containerRef.current);
+            const margin = {
+                top: 20,
+                right: 20,
+                bottom: 100,
+                left: 75
+            }
 
-            const svg = d3.select(svgRef.current)
-                .attr('width', width)
-                .attr('height', height);
+            const xValue = (d: any) => d.date;
+            const yValue = (d: any) => d.kwh as number;
+            const compareTime = (a: Date, b: Date) => a.getTime() - b.getTime();
 
             const electricityKwhData: ElectricityKwhData[] = billData.electricityBillData.map(data => ({
                 kwh: +data.k_wh_consumption,
@@ -43,29 +56,60 @@ export default function Home() {
             const electricityMinDate: Date = d3.min(electricityKwhData, d => d.date as Date) as Date;
             const electricityMaxDate: Date = d3.max(electricityKwhData, d => d.date as Date) as Date;
             const electricityMaxKwh: number = d3.max(electricityKwhData, d => d.kwh) as number;
+            electricityKwhData.sort((a: ElectricityKwhData, b: ElectricityKwhData) => compareTime(a.date, b.date));
+            
+            setSize({
+                width: container.property('clientWidth'),
+                height: electricityKwhData.length
+            });
+            const innerWidth = size.width - margin.left - margin.right;
+            const innerHeight = size.height - margin.top - margin.bottom;
 
-            electricityKwhData.sort((a, b) => a.date.getTime() - b.date.getTime());
+            const svg = d3.select(svgRef.current)
+                .attr('width', size.width)
+                .attr('height', size.height)
+                .attr('background', '#d3d3d3');
 
-            const electricityX = d3.scaleTime()
+            const xScale = d3.scaleTime()
                 .domain([electricityMinDate, electricityMaxDate])
-                .range([0, width]);
-            const electricityY = d3.scaleLinear()
+                .range([0, innerWidth])
+                .nice();
+            const yScale = d3.scaleLinear()
                 .domain([0, electricityMaxKwh])
-                .range([height, 0]);
+                .range([innerHeight, 0])
+                .nice();
 
-            const electricityLine = d3.line()
-                .x((d: any) => electricityX(d.date))
-                .y((d: any) => electricityY(d.kwh));
+            if (svg.selectChild()) console.log(svg.selectChild());
 
-            svg.selectAll('.line')
-                .data([electricityKwhData])
-                .join('path')
-                    .attr('d', (d: any) => electricityLine(d))
-                    .attr('fill', 'none')
-                    .attr('stroke', '#0f770d')
-                    .attr('stroke-width', 2);
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+            const lineGenerator = d3.line()
+                .x(d => xScale(xValue(d)))
+                .y(d => yScale(yValue(d)));
+
+            g.append('g').call(d3.axisLeft(yScale))
+                .style('font-size', '1em');
+            const xLabels = g.append('g').call(d3.axisBottom(xScale))
+                .attr('transform', `translate(0, ${innerHeight})`)
+                .style('font-size', '1em');
+            g.append('path')
+                .attr('class', 'line-path')
+                .attr('d', lineGenerator(electricityKwhData as any))
+                .attr('fill', 'none')
+                .attr('stroke', 'green');
+            g.selectAll('circle').data(electricityKwhData)
+                .enter().append('circle')
+                    .attr('cx', d => xScale(xValue(d)))
+                    .attr('cy', d => yScale(yValue(d)))
+                    .attr('r', 3)
+                    .style('fill', 'green');
+            xLabels.selectAll('text')
+                .attr('x', -30)
+                .attr('transform', 'rotate(-45)')
+                .style('text-anchor', 'start');
         }
-    }, [billData]);
+    }, [billData, size]);
 
     if (isLoading) {
         return (
