@@ -11,7 +11,6 @@ interface ElectricityKwhData {
 
 export default function Home() {
     const [billData, setBillData] = useState<BillData>();
-    const [size, setSize] = useState({width: 0, height: 0});
     const [isLoading, setIsLoading] = useState<Boolean>(true);
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
@@ -28,21 +27,21 @@ export default function Home() {
             });
     }, []);
 
-    useLayoutEffect(() => {
-        if (containerRef.current) setSize({
-            ...size,
-            width: containerRef.current.clientWidth
-        });
-    }, []);
+    // useLayoutEffect(() => {
+    //     if (containerRef.current) setSize({
+    //         ...size,
+    //         width: containerRef.current.clientWidth
+    //     });
+    // }, []);
 
     useEffect(() => {
         if (typeof billData === 'object') {
             const container = d3.select(containerRef.current);
             const margin = {
-                top: 20,
-                right: 20,
-                bottom: 100,
-                left: 75
+                top: 30,
+                right: 85,
+                bottom: 50,
+                left: 85
             }
 
             const xValue = (d: any) => d.date;
@@ -58,16 +57,14 @@ export default function Home() {
             const electricityMaxKwh: number = d3.max(electricityKwhData, d => d.kwh) as number;
             electricityKwhData.sort((a: ElectricityKwhData, b: ElectricityKwhData) => compareTime(a.date, b.date));
             
-            setSize({
-                width: container.property('clientWidth'),
-                height: electricityKwhData.length
-            });
-            const innerWidth = size.width - margin.left - margin.right;
-            const innerHeight = size.height - margin.top - margin.bottom;
+            const width = container.property('clientWidth');
+            const height = electricityKwhData.length
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
 
             const svg = d3.select(svgRef.current)
-                .attr('width', size.width)
-                .attr('height', size.height)
+                .attr('width', width)
+                .attr('height', height)
                 .attr('background', '#d3d3d3');
 
             const xScale = d3.scaleTime()
@@ -87,12 +84,26 @@ export default function Home() {
             const lineGenerator = d3.line()
                 .x(d => xScale(xValue(d)))
                 .y(d => yScale(yValue(d)));
-
-            g.append('g').call(d3.axisLeft(yScale))
+            const yAxis = d3.axisLeft(yScale)
+                .tickSize(-innerWidth);
+            const xAxis = d3.axisBottom(xScale);
+            const yAxisG = g.append('g').call(yAxis)
                 .style('font-size', '1em');
-            const xLabels = g.append('g').call(d3.axisBottom(xScale))
+            yAxisG.append('text')
+                .attr('class', 'axis-label')
+                .attr('y', -70)
+                .attr('x', -innerHeight / 2)
+                .attr('fill', 'black')
+                .attr('transform', `rotate(-90)`)
+                .attr('text-anchor', 'middle')
+                .text('Consumption (kwh)');
+            const xAxisG = g.append('g').call(xAxis)
                 .attr('transform', `translate(0, ${innerHeight})`)
                 .style('font-size', '1em');
+            xAxisG.selectAll('text')
+                .attr('x', -30)
+                .attr('transform', 'rotate(-45)')
+                .style('text-anchor', 'start');        
             g.append('path')
                 .attr('class', 'line-path')
                 .attr('d', lineGenerator(electricityKwhData as any))
@@ -104,12 +115,15 @@ export default function Home() {
                     .attr('cy', d => yScale(yValue(d)))
                     .attr('r', 3)
                     .style('fill', 'green');
-            xLabels.selectAll('text')
-                .attr('x', -30)
-                .attr('transform', 'rotate(-45)')
-                .style('text-anchor', 'start');
+            g.append('text')
+                .attr('class', 'title')
+                .attr('y', -10)
+                .attr('x', (innerWidth / 2 - margin.left / 2))
+                .text('Utility Bill Data');
+            d3.select('.tick line')
+                .attr('stroke', '#d1e8ff');
         }
-    }, [billData, size]);
+    }, [billData]);
 
     if (isLoading) {
         return (
