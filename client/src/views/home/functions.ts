@@ -76,6 +76,16 @@ interface ElectricityKwhData {
     date: Date
 }
 
+interface WaterM3Data {
+    m3: number,
+    date: Date
+}
+
+interface GasGjData {
+    gj: number,
+    date: Date
+}
+
 export function generateElectricityLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date) {
     const container = d3.select(containerElement);
     const margin = {
@@ -95,11 +105,11 @@ export function generateElectricityLineChart(containerElement: HTMLDivElement, s
                 date: new Date(+data.year, +data.month),
             } as ElectricityKwhData)
         );
-    const electricityMinDate: Date = fromDate || d3.min(
+    const minDate: Date = fromDate || d3.min(
         electricityKwhData,
         (d) => d.date as Date
     ) as Date;
-    const electricityMaxDate: Date = toDate || d3.max(
+    const maxDate: Date = toDate || d3.max(
         electricityKwhData,
         (d) => d.date as Date
     ) as Date;
@@ -125,7 +135,7 @@ export function generateElectricityLineChart(containerElement: HTMLDivElement, s
 
     const xScale = d3
         .scaleTime()
-        .domain([electricityMinDate, electricityMaxDate])
+        .domain([minDate, maxDate])
         .range([0, innerWidth])
         .nice();
     const yScale = d3
@@ -184,7 +194,7 @@ export function generateElectricityLineChart(containerElement: HTMLDivElement, s
         .attr("class", "title")
         .attr("y", -10)
         .attr("x", innerWidth / 2 - margin.left / 2)
-        .text("Utility Bill Data");
+        .text("Electricity Bill Data");
 
     d3.select(".tick line").attr("stroke", "#d1e8ff");
 }
@@ -199,33 +209,35 @@ export function generateWaterLineChart(containerElement: HTMLDivElement, svgElem
     };
 
     const xValue = (d: any) => d.date;
-    const yValue = (d: any) => d.kwh as number;
+    const yValue = (d: any) => d.m3 as number;
     const compareTime = (a: Date, b: Date) => a.getTime() - b.getTime();
 
-    const electricityKwhData: ElectricityKwhData[] =
-        billData.electricityBillData.map((data) => ({
-                kwh: +data.k_wh_consumption,
+    const waterM3Data: WaterM3Data[] =
+        billData.waterBillData.map((data) => ({
+                m3: +data.m_3_consumption,
                 date: new Date(+data.year, +data.month),
-            } as ElectricityKwhData)
+            } as WaterM3Data)
         );
-    const electricityMinDate: Date = fromDate || d3.min(
-        electricityKwhData,
+    const minDate: Date = fromDate || d3.min(
+        waterM3Data,
         (d) => d.date as Date
     ) as Date;
-    const electricityMaxDate: Date = toDate || d3.max(
-        electricityKwhData,
+    const maxDate: Date = toDate || d3.max(
+        waterM3Data,
         (d) => d.date as Date
     ) as Date;
-    const electricityMaxKwh: number = d3.max(
-        electricityKwhData,
-        (d) => d.kwh
+    const waterMaxM3: number = d3.max(
+        waterM3Data,
+        (d) => d.m3
     ) as number;
-    electricityKwhData.sort((a: ElectricityKwhData, b: ElectricityKwhData) =>
+    waterM3Data.sort((a: WaterM3Data, b: WaterM3Data) =>
         compareTime(a.date, b.date)
     );
 
+    console.log(waterM3Data);
+
     const width = container.property("clientWidth");
-    const height = electricityKwhData.length;
+    const height = waterM3Data.length;
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -238,12 +250,12 @@ export function generateWaterLineChart(containerElement: HTMLDivElement, svgElem
 
     const xScale = d3
         .scaleTime()
-        .domain([electricityMinDate, electricityMaxDate])
+        .domain([minDate, maxDate])
         .range([0, innerWidth])
         .nice();
     const yScale = d3
         .scaleLinear()
-        .domain([0, electricityMaxKwh])
+        .domain([0, waterMaxM3])
         .range([innerHeight, 0])
         .nice();
 
@@ -268,7 +280,7 @@ export function generateWaterLineChart(containerElement: HTMLDivElement, svgElem
         .attr("fill", "black")
         .attr("transform", `rotate(-90)`)
         .attr("text-anchor", "middle")
-        .text("Consumption (kwh)");
+        .html("Consumption (&#13221)");
     const xAxisG = g
         .append("g")
         .call(xAxis)
@@ -282,11 +294,11 @@ export function generateWaterLineChart(containerElement: HTMLDivElement, svgElem
 
     g.append("path")
         .attr("class", "line-path")
-        .attr("d", lineGenerator(electricityKwhData as any))
+        .attr("d", lineGenerator(waterM3Data as any))
         .attr("fill", "none")
         .attr("stroke", "green");
     g.selectAll("circle")
-        .data(electricityKwhData)
+        .data(waterM3Data)
         .enter()
         .append("circle")
         .attr("cx", (d) => xScale(xValue(d)))
@@ -297,7 +309,7 @@ export function generateWaterLineChart(containerElement: HTMLDivElement, svgElem
         .attr("class", "title")
         .attr("y", -10)
         .attr("x", innerWidth / 2 - margin.left / 2)
-        .text("Utility Bill Data");
+        .text("Water Bill Data");
 
     d3.select(".tick line").attr("stroke", "#d1e8ff");
 }
@@ -312,33 +324,33 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
     };
 
     const xValue = (d: any) => d.date;
-    const yValue = (d: any) => d.kwh as number;
+    const yValue = (d: any) => d.gj as number;
     const compareTime = (a: Date, b: Date) => a.getTime() - b.getTime();
 
-    const electricityKwhData: ElectricityKwhData[] =
-        billData.electricityBillData.map((data) => ({
-                kwh: +data.k_wh_consumption,
+    const gasGjData: GasGjData[] =
+        billData.gasBillData.map((data) => ({
+                gj: +data.g_j_consumption,
                 date: new Date(+data.year, +data.month),
-            } as ElectricityKwhData)
+            } as GasGjData)
         );
-    const electricityMinDate: Date = fromDate || d3.min(
-        electricityKwhData,
+    const minDate: Date = fromDate || d3.min(
+        gasGjData,
         (d) => d.date as Date
     ) as Date;
-    const electricityMaxDate: Date = toDate || d3.max(
-        electricityKwhData,
+    const maxDate: Date = toDate || d3.max(
+        gasGjData,
         (d) => d.date as Date
     ) as Date;
-    const electricityMaxKwh: number = d3.max(
-        electricityKwhData,
-        (d) => d.kwh
+    const gasMaxGj: number = d3.max(
+        gasGjData,
+        (d) => d.gj
     ) as number;
-    electricityKwhData.sort((a: ElectricityKwhData, b: ElectricityKwhData) =>
+    gasGjData.sort((a: GasGjData, b: GasGjData) =>
         compareTime(a.date, b.date)
     );
 
     const width = container.property("clientWidth");
-    const height = electricityKwhData.length;
+    const height = gasGjData.length;
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -351,12 +363,12 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
 
     const xScale = d3
         .scaleTime()
-        .domain([electricityMinDate, electricityMaxDate])
+        .domain([minDate, maxDate])
         .range([0, innerWidth])
         .nice();
     const yScale = d3
         .scaleLinear()
-        .domain([0, electricityMaxKwh])
+        .domain([0, gasMaxGj])
         .range([innerHeight, 0])
         .nice();
 
@@ -381,7 +393,7 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
         .attr("fill", "black")
         .attr("transform", `rotate(-90)`)
         .attr("text-anchor", "middle")
-        .text("Consumption (kwh)");
+        .text("Consumption (GJ)");
     const xAxisG = g
         .append("g")
         .call(xAxis)
@@ -395,11 +407,11 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
 
     g.append("path")
         .attr("class", "line-path")
-        .attr("d", lineGenerator(electricityKwhData as any))
+        .attr("d", lineGenerator(gasGjData as any))
         .attr("fill", "none")
         .attr("stroke", "green");
     g.selectAll("circle")
-        .data(electricityKwhData)
+        .data(gasGjData)
         .enter()
         .append("circle")
         .attr("cx", (d) => xScale(xValue(d)))
@@ -410,7 +422,7 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
         .attr("class", "title")
         .attr("y", -10)
         .attr("x", innerWidth / 2 - margin.left / 2)
-        .text("Utility Bill Data");
+        .text("Gas Bill Data");
 
     d3.select(".tick line").attr("stroke", "#d1e8ff");
 }
