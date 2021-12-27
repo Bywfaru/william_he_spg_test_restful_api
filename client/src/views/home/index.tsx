@@ -8,40 +8,47 @@ export default function Home() {
     const [fromDate, setFromDate] = useState<Date>();
     const [toDate, setToDate] = useState<Date>();
     const [utilityType, setUtilityType] = useState<UtilityType>(UtilityType.ELECTRICITY);
+    const [clientWidth, setClientWidth] = useState<number>(100);
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
     
+    function onWindowResize() {
+        const container = document.getElementsByClassName('container').item(0) as Element;
+
+        setClientWidth(container.clientWidth);
+    }
+
     useEffect(() => {
+        window.addEventListener('resize', onWindowResize);
+
         getBillData()
             .then(res => {
                 if (res instanceof Error) {
                     console.error(res.message);
                 } else {
+                    onWindowResize()
+
                     setIsLoading(false);
                     setBillData(res as BillData);
                 }
             });
+
+        return () => window.removeEventListener('resize', onWindowResize);
     }, []);
 
-    // useLayoutEffect(() => {
-    //     if (containerRef.current) setSize({
-    //         ...size,
-    //         width: containerRef.current.clientWidth
-    //     });
-    // }, []);
-
     useEffect(() => {
-        if (typeof billData === 'object' && containerRef.current && svgRef.current) {
+        if (typeof billData === 'object' && containerRef.current && svgRef.current && clientWidth) {
             generateLineChart(
                 containerRef.current as HTMLDivElement, 
                 svgRef.current as SVGSVGElement, 
                 billData as BillData, 
                 utilityType as UtilityType, 
                 fromDate as Date, 
-                toDate as Date
+                toDate as Date,
+                clientWidth as number
             );
         }
-    }, [billData, utilityType, fromDate, toDate]);
+    }, [billData, utilityType, fromDate, toDate, clientWidth]);
 
     if (isLoading) {
         return (

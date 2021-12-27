@@ -86,7 +86,7 @@ interface GasGjData {
     date: Date
 }
 
-export function generateElectricityLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date) {
+export function generateElectricityLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
     const container = d3.select(containerElement);
     const margin = {
         top: 30,
@@ -121,7 +121,7 @@ export function generateElectricityLineChart(containerElement: HTMLDivElement, s
         compareTime(a.date, b.date)
     );
 
-    const width = container.property("clientWidth");
+    const width = clientWidth;
     const height = electricityKwhData.length;
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
@@ -199,7 +199,7 @@ export function generateElectricityLineChart(containerElement: HTMLDivElement, s
     d3.select(".tick line").attr("stroke", "#d1e8ff");
 }
 
-export function generateWaterLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date) {
+export function generateWaterLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
     const container = d3.select(containerElement);
     const margin = {
         top: 30,
@@ -236,7 +236,7 @@ export function generateWaterLineChart(containerElement: HTMLDivElement, svgElem
 
     console.log(waterM3Data);
 
-    const width = container.property("clientWidth");
+    const width = clientWidth;
     const height = waterM3Data.length;
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
@@ -314,7 +314,7 @@ export function generateWaterLineChart(containerElement: HTMLDivElement, svgElem
     d3.select(".tick line").attr("stroke", "#d1e8ff");
 }
 
-export function generateGasLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date) {
+export function generateGasLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
     const container = d3.select(containerElement);
     const margin = {
         top: 30,
@@ -349,16 +349,16 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
         compareTime(a.date, b.date)
     );
 
-    const width = container.property("clientWidth");
+    const width = clientWidth;
     const height = gasGjData.length;
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    const svg = d3
+    const svg = d3  
         .select(svgElement)
-        .attr("width", width)
-        .attr("height", height)
-        .attr("background", "#d3d3d3");
+            .attr("width", width)
+            .attr("height", height)
+            .attr("background", "#d3d3d3");
     svg.selectAll('g > *').remove();
 
     const xScale = d3
@@ -385,8 +385,7 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
     const xAxis = d3.axisBottom(xScale);
 
     const yAxisG = g.append("g").call(yAxis).style("font-size", "1em");
-    yAxisG
-        .append("text")
+    yAxisG.append("text")
         .attr("class", "axis-label")
         .attr("y", -70)
         .attr("x", -innerHeight / 2)
@@ -394,13 +393,11 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
         .attr("transform", `rotate(-90)`)
         .attr("text-anchor", "middle")
         .text("Consumption (GJ)");
-    const xAxisG = g
-        .append("g")
+    const xAxisG = g.append("g")
         .call(xAxis)
         .attr("transform", `translate(0, ${innerHeight})`)
         .style("font-size", "1em");
-    xAxisG
-        .selectAll("text")
+    xAxisG.selectAll("text")
         .attr("x", -30)
         .attr("transform", "rotate(-45)")
         .style("text-anchor", "start");
@@ -433,17 +430,18 @@ export function generateLineChart(
     billData: BillData, 
     utilityType: UtilityType,
     fromDate: Date,
-    toDate: Date
+    toDate: Date,
+    clientWidth: number
     ) {
     switch (utilityType) {
         case UtilityType.ELECTRICITY:
-            generateElectricityLineChart(containerElement, svgElement, billData, fromDate, toDate);
+            generateElectricityLineChart(containerElement, svgElement, billData, fromDate, toDate, clientWidth);
             break;
         case UtilityType.WATER:
-            generateWaterLineChart(containerElement, svgElement, billData, fromDate, toDate);
+            generateWaterLineChart(containerElement, svgElement, billData, fromDate, toDate, clientWidth);
             break;
         case UtilityType.GAS:
-            generateGasLineChart(containerElement, svgElement, billData, fromDate, toDate);
+            generateGasLineChart(containerElement, svgElement, billData, fromDate, toDate, clientWidth);
             break;
     }
 }
