@@ -86,8 +86,7 @@ interface GasGjData {
     date: Date
 }
 
-export function generateElectricityLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
-    const container = d3.select(containerElement);
+export function generateElectricityLineChart(svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
     const margin = {
         top: 30,
         right: 85,
@@ -199,8 +198,7 @@ export function generateElectricityLineChart(containerElement: HTMLDivElement, s
     d3.select(".tick line").attr("stroke", "#d1e8ff");
 }
 
-export function generateWaterLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
-    const container = d3.select(containerElement);
+export function generateWaterLineChart(svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
     const margin = {
         top: 30,
         right: 85,
@@ -314,8 +312,7 @@ export function generateWaterLineChart(containerElement: HTMLDivElement, svgElem
     d3.select(".tick line").attr("stroke", "#d1e8ff");
 }
 
-export function generateGasLineChart(containerElement: HTMLDivElement, svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
-    const container = d3.select(containerElement);
+export function generateGasLineChart(svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
     const margin = {
         top: 30,
         right: 85,
@@ -425,7 +422,6 @@ export function generateGasLineChart(containerElement: HTMLDivElement, svgElemen
 }
 
 export function generateLineChart(
-    containerElement: HTMLDivElement, 
     svgElement: SVGSVGElement, 
     billData: BillData, 
     utilityType: UtilityType,
@@ -435,13 +431,13 @@ export function generateLineChart(
     ) {
     switch (utilityType) {
         case UtilityType.ELECTRICITY:
-            generateElectricityLineChart(containerElement, svgElement, billData, fromDate, toDate, clientWidth);
+            generateElectricityLineChart(svgElement, billData, fromDate, toDate, clientWidth);
             break;
         case UtilityType.WATER:
-            generateWaterLineChart(containerElement, svgElement, billData, fromDate, toDate, clientWidth);
+            generateWaterLineChart(svgElement, billData, fromDate, toDate, clientWidth);
             break;
         case UtilityType.GAS:
-            generateGasLineChart(containerElement, svgElement, billData, fromDate, toDate, clientWidth);
+            generateGasLineChart(svgElement, billData, fromDate, toDate, clientWidth);
             break;
     }
 }

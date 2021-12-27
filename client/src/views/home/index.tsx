@@ -8,38 +8,34 @@ export default function Home() {
     const [fromDate, setFromDate] = useState<Date>();
     const [toDate, setToDate] = useState<Date>();
     const [utilityType, setUtilityType] = useState<UtilityType>(UtilityType.ELECTRICITY);
-    const [clientWidth, setClientWidth] = useState<number>(100);
+    const [clientWidth, setClientWidth] = useState<number>();
     const containerRef = useRef<HTMLDivElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
     
-    function onWindowResize() {
-        const container = document.getElementsByClassName('container').item(0) as Element;
-
-        setClientWidth(container.clientWidth);
+    function handleResize() {
+        if (containerRef.current) setClientWidth(containerRef.current.clientWidth);
     }
 
     useEffect(() => {
-        window.addEventListener('resize', onWindowResize);
+        window.addEventListener('resize', handleResize);
 
         getBillData()
             .then(res => {
                 if (res instanceof Error) {
                     console.error(res.message);
                 } else {
-                    onWindowResize()
-
                     setIsLoading(false);
                     setBillData(res as BillData);
+                    handleResize()
                 }
             });
 
-        return () => window.removeEventListener('resize', onWindowResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     useEffect(() => {
         if (typeof billData === 'object' && containerRef.current && svgRef.current && clientWidth) {
             generateLineChart(
-                containerRef.current as HTMLDivElement, 
                 svgRef.current as SVGSVGElement, 
                 billData as BillData, 
                 utilityType as UtilityType, 
