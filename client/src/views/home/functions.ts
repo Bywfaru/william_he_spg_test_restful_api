@@ -51,12 +51,39 @@ export async function getGasBillData() {
     }
 }
 
+/**
+ * Returns bill data in the form of an array containing JSON objects.
+ * 
+ * @param utilityType UtilityType enum
+ * @returns An array containing JSON objects
+ */
+async function billDataRequest(utilityType: UtilityType) {
+    try {
+        let data: ElectricityBillData[] | WaterBillData[] | GasBillData[];
+
+        switch (utilityType) {
+            case UtilityType.ELECTRICITY:
+                data = (await axios.get(`${BASE_ENDPOINT_URL}/electricity-bill-data`)).data as ElectricityBillData[];
+                break;
+            case UtilityType.WATER:
+                data = (await axios.get(`${BASE_ENDPOINT_URL}/water-bill-data`)).data as WaterBillData[];
+                break;
+            case UtilityType.GAS:
+                data = (await axios.get(`${BASE_ENDPOINT_URL}/gas-bill-data`)).data as GasBillData[];
+                break;
+        }
+
+        return data;
+    } catch (error: unknown) {
+        if (error instanceof Error) return error;
+    }
+}
+
 export async function getBillData() {
     try {
-        const electricityBillData: ElectricityBillData[] =
-            await getElectricityBillData();
-        const waterBillData: WaterBillData[] = await getWaterBillData();
-        const gasBillData: GasBillData[] = await getGasBillData();
+        const electricityBillData: ElectricityBillData[] = await billDataRequest(UtilityType.ELECTRICITY) as ElectricityBillData[];
+        const waterBillData: WaterBillData[] = await billDataRequest(UtilityType.WATER) as WaterBillData[];
+        const gasBillData: GasBillData[] = await billDataRequest(UtilityType.GAS) as GasBillData[];
         const billData: BillData = {
             electricityBillData: electricityBillData,
             waterBillData: waterBillData,
@@ -73,17 +100,17 @@ export async function getBillData() {
 
 interface ElectricityKwhData {
     kwh: number,
-    date: Date
+        date: Date
 }
 
 interface WaterM3Data {
     m3: number,
-    date: Date
+        date: Date
 }
 
 interface GasGjData {
     gj: number,
-    date: Date
+        date: Date
 }
 
 export function generateElectricityLineChart(svgElement: SVGSVGElement, billData: BillData, fromDate: Date, toDate: Date, clientWidth: number) {
@@ -351,11 +378,11 @@ export function generateGasLineChart(svgElement: SVGSVGElement, billData: BillDa
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    const svg = d3  
+    const svg = d3
         .select(svgElement)
-            .attr("width", width)
-            .attr("height", height)
-            .attr("background", "#d3d3d3");
+        .attr("width", width)
+        .attr("height", height)
+        .attr("background", "#d3d3d3");
     svg.selectAll('g > *').remove();
 
     const xScale = d3
@@ -422,13 +449,13 @@ export function generateGasLineChart(svgElement: SVGSVGElement, billData: BillDa
 }
 
 export function generateLineChart(
-    svgElement: SVGSVGElement, 
-    billData: BillData, 
+    svgElement: SVGSVGElement,
+    billData: BillData,
     utilityType: UtilityType,
     fromDate: Date,
     toDate: Date,
     clientWidth: number
-    ) {
+) {
     switch (utilityType) {
         case UtilityType.ELECTRICITY:
             generateElectricityLineChart(svgElement, billData, fromDate, toDate, clientWidth);
