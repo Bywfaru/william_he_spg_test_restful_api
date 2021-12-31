@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Stack, FormLabel, FormCheck, FormControl, Form } from 'react-bootstrap';
-import { BillData, generateLineChart, getBillData, UtilityType, handleDateOnChange } from './functions';
+import { BillData, UtilityType } from '../../types/bill-data.types';
+import { generateLineChart, handleDateOnChange } from './functions';
+import { BillDataController } from '../../controllers/bill-data-controller';
 
 export default function Home() {
     const [billData, setBillData] = useState<BillData>();
@@ -19,7 +21,7 @@ export default function Home() {
     useEffect(() => {
         window.addEventListener('resize', handleResize);
 
-        getBillData()
+        BillDataController.getBillData()
             .then(res => {
                 if (res instanceof Error) {
                     console.error(res.message);

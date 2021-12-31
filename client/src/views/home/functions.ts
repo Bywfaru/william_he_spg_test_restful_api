@@ -1,123 +1,25 @@
-import axios from "axios";
 import * as d3 from "d3";
 import {
-    ElectricityBillData,
-    GasBillData,
-    WaterBillData,
+    ElectricityKwhData,
+    GasGjData,
+    WaterM3Data,
+    BillData,
+    UtilityType
 } from "../../types/bill-data.types";
 
-const BASE_ENDPOINT_URL = "http://localhost:3000";
-
-export enum UtilityType {
-    ELECTRICITY = 'electricity',
-    GAS = 'gas',
-    WATER = 'water'
-}
-
-export type BillData = {
-    electricityBillData: ElectricityBillData[];
-    waterBillData: WaterBillData[];
-    gasBillData: GasBillData[];
-};
-
-export async function getElectricityBillData() {
-    try {
-        const data = (await axios.get(`${BASE_ENDPOINT_URL}/electricity-bill-data`))
-            .data;
-
-        return data;
-    } catch (error: unknown) {
-        if (error instanceof Error) return error;
-    }
-}
-
-export async function getWaterBillData() {
-    try {
-        const data = (await axios.get(`${BASE_ENDPOINT_URL}/water-bill-data`)).data;
-
-        return data;
-    } catch (error: unknown) {
-        if (error instanceof Error) return error;
-    }
-}
-
-export async function getGasBillData() {
-    try {
-        const data = (await axios.get(`${BASE_ENDPOINT_URL}/gas-bill-data`)).data;
-
-        return data;
-    } catch (error: unknown) {
-        if (error instanceof Error) return error;
-    }
-}
-
 /**
- * Returns bill data in the form of an array containing JSON objects.
+ * Builds a line chart and appends it to the DOM using the provided data.
  * 
- * @param utilityType UtilityType enum
- * @returns An array containing JSON objects
+ * @param svgElement the base SVG DOM element
+ * @param fromDate from-date filter if set; null otherwise
+ * @param toDate to-date filter if set; null otherwise
+ * @param clientWidth the container's width
+ * @param consumptionData the consumption data to display
+ * @param yValue function for d3 to use to generate the y data points
+ * @param maxConsumption the max consumption in the data
+ * @param titleLabel the title label
+ * @param yAxisLabel the y-axis label
  */
-async function billDataRequest(utilityType: UtilityType) {
-    try {
-        let data: ElectricityBillData[] | WaterBillData[] | GasBillData[];
-
-        switch (utilityType) {
-            case UtilityType.ELECTRICITY:
-                data = (await axios.get(`${BASE_ENDPOINT_URL}/electricity-bill-data`)).data as ElectricityBillData[];
-                break;
-            case UtilityType.WATER:
-                data = (await axios.get(`${BASE_ENDPOINT_URL}/water-bill-data`)).data as WaterBillData[];
-                break;
-            case UtilityType.GAS:
-                data = (await axios.get(`${BASE_ENDPOINT_URL}/gas-bill-data`)).data as GasBillData[];
-                break;
-        }
-
-        return data;
-    } catch (error: unknown) {
-        if (error instanceof Error) return error;
-    }
-}
-
-/**
- * Retrieves all the different bill data
- * 
- * @returns object of arrays of objects
- */
-export async function getBillData() {
-    try {
-        const electricityBillData: ElectricityBillData[] = await billDataRequest(UtilityType.ELECTRICITY) as ElectricityBillData[];
-        const waterBillData: WaterBillData[] = await billDataRequest(UtilityType.WATER) as WaterBillData[];
-        const gasBillData: GasBillData[] = await billDataRequest(UtilityType.GAS) as GasBillData[];
-        const billData: BillData = {
-            electricityBillData: electricityBillData,
-            waterBillData: waterBillData,
-            gasBillData: gasBillData,
-        };
-
-        return billData;
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            return error;
-        }
-    }
-}
-
-interface ElectricityKwhData {
-    kwh: number,
-    date: Date
-}
-
-interface WaterM3Data {
-    m3: number,
-    date: Date
-}
-
-interface GasGjData {
-    gj: number,
-    date: Date
-}
-
 function buildLineChart(
     svgElement: SVGSVGElement,
     fromDate: Date | null,
@@ -210,13 +112,12 @@ function buildLineChart(
         .attr("transform", "rotate(-45)")
         .style("text-anchor", "start");
 
-    const clipPath = g.append('defs')
+    g.append('defs')
         .append('clipPath')
             .attr('id', 'clip')
                 .append('rect')
                 .attr('width', innerWidth)
                 .attr('height', innerHeight);
-
     g.append("path")
         .attr("class", "line-path")
         .attr("d", lineGenerator(consumptionData as any))
@@ -370,6 +271,12 @@ export function generateLineChart(
     }
 }
 
+/**
+ * Handles date input value changes.
+ * 
+ * @param e the element that called the function
+ * @param callback React setState function
+ */
 export function handleDateOnChange(e: any, callback: React.Dispatch<React.SetStateAction<Date | undefined>>) {
     const date = `${e.target.value} 00:00`;
 

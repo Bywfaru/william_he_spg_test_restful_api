@@ -1,3 +1,15 @@
+export enum UtilityType {
+    ELECTRICITY = 'electricity',
+    GAS = 'gas',
+    WATER = 'water'
+}
+
+export interface BillData {
+    electricityBillData: ElectricityBillData[];
+    waterBillData: WaterBillData[];
+    gasBillData: GasBillData[];
+};
+
 export interface ElectricityBillData {
     id: string;
     createdBy: string;
@@ -62,4 +74,19 @@ export interface WaterBillData {
     total_sewer_charge: string;
     tax: string;
     building_id: string;
+}
+
+export interface ElectricityKwhData {
+    kwh: number,
+    date: Date
+}
+
+export interface WaterM3Data {
+    m3: number,
+    date: Date
+}
+
+export interface GasGjData {
+    gj: number,
+    date: Date
 }
