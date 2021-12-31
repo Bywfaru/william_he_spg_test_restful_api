@@ -120,8 +120,8 @@ interface GasGjData {
 
 function buildLineChart(
     svgElement: SVGSVGElement,
-    fromDate: Date,
-    toDate: Date,
+    fromDate: Date | null,
+    toDate: Date | null,
     clientWidth: number,
     consumptionData: ElectricityKwhData[] | GasGjData[] | WaterM3Data[],
     yValue: (d: any) => number,
@@ -138,6 +138,9 @@ function buildLineChart(
     const compareTime = (a: Date, b: Date) => a.getTime() - b.getTime();
 
     const xValue = (d: any) => d.date;
+
+    if (fromDate && fromDate.toString() === 'Invalid Date') fromDate = null;
+    if (toDate && toDate.toString() === 'Invalid Date') toDate = null;
 
     const minDate: Date = fromDate || d3.min(
         consumptionData as any,
