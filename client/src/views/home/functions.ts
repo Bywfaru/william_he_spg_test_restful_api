@@ -10,8 +10,8 @@ const BASE_ENDPOINT_URL = "http://localhost:3000";
 
 export enum UtilityType {
     ELECTRICITY = 'electricity',
-        GAS = 'gas',
-        WATER = 'water'
+    GAS = 'gas',
+    WATER = 'water'
 }
 
 export type BillData = {
@@ -157,8 +157,6 @@ function buildLineChart(
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    console.log(innerWidth);
-
     const svg = d3
         .select(svgElement)
         .attr("width", width)
@@ -181,8 +179,7 @@ function buildLineChart(
         .append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    const lineGenerator = d3
-        .line()
+    const lineGenerator = d3.line()
         .x((d) => xScale(xValue(d)))
         .y((d) => yScale(yValue(d)));
 
@@ -210,11 +207,19 @@ function buildLineChart(
         .attr("transform", "rotate(-45)")
         .style("text-anchor", "start");
 
+    const clipPath = g.append('defs')
+        .append('clipPath')
+            .attr('id', 'clip')
+                .append('rect')
+                .attr('width', innerWidth)
+                .attr('height', innerHeight);
+
     g.append("path")
         .attr("class", "line-path")
         .attr("d", lineGenerator(consumptionData as any))
         .attr("fill", "none")
-        .attr("stroke", "green");
+        .attr("stroke", "green")
+        .attr('clip-path', 'url(#clip)');
     g.selectAll("circle")
         .data(consumptionData as any)
         .enter()
@@ -222,7 +227,8 @@ function buildLineChart(
         .attr("cx", (d) => xScale(xValue(d)))
         .attr("cy", (d) => yScale(yValue(d)))
         .attr("r", 3)
-        .style("fill", "green");
+        .style("fill", "green")
+        .attr('clip-path', 'url(#clip)');
     g.append("text")
         .attr("class", "title")
         .attr("y", -10)
@@ -359,4 +365,10 @@ export function generateLineChart(
             generateGasLineChart(svgElement, billData, fromDate, toDate, clientWidth);
             break;
     }
+}
+
+export function handleDateOnChange(e: any, callback: React.Dispatch<React.SetStateAction<Date | undefined>>) {
+    const date = `${e.target.value} 00:00`;
+
+    callback(new Date(date));
 }

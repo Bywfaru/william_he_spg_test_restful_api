@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Container, Stack, FormLabel, FormCheck, FormControl, Form } from 'react-bootstrap';
-import { BillData, generateLineChart, getBillData, UtilityType } from './functions';
+import { BillData, generateLineChart, getBillData, UtilityType, handleDateOnChange } from './functions';
 
 export default function Home() {
     const [billData, setBillData] = useState<BillData>();
@@ -64,9 +64,9 @@ export default function Home() {
                 <svg ref={svgRef}></svg>
                 
                 <FormLabel>FROM</FormLabel>
-                <FormControl name='inputDateFrom' type='date' onChange={(e) => { setFromDate(new Date(e.target.value)) }} />
+                <FormControl name='inputDateFrom' type='date' onChange={(e) => { handleDateOnChange(e, setFromDate) }} />
                 <FormLabel>TO</FormLabel>
-                <FormControl name='inputDateTo' type='date' onChange={(e) => { setToDate(new Date(e.target.value)) }} />
+                <FormControl name='inputDateTo' type='date' onChange={(e) => { handleDateOnChange(e, setToDate) }} />
 
                 <FormLabel>Utility Types</FormLabel>
                 <Form>
