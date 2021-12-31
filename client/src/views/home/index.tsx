@@ -65,10 +65,16 @@ export default function Home() {
 
                 <svg ref={svgRef}></svg>
                 
-                <FormLabel>FROM</FormLabel>
-                <FormControl name='inputDateFrom' type='date' onChange={(e) => { handleDateOnChange(e, setFromDate) }} />
-                <FormLabel>TO</FormLabel>
-                <FormControl name='inputDateTo' type='date' onChange={(e) => { handleDateOnChange(e, setToDate) }} />
+                <Stack direction='horizontal' gap={3} className='mb-3'>
+                    <Stack>
+                        <FormLabel>From</FormLabel>
+                        <FormControl name='inputDateFrom' type='date' onChange={(e) => { handleDateOnChange(e, setFromDate) }} />
+                    </Stack>
+                    <Stack>
+                        <FormLabel>To</FormLabel>
+                        <FormControl name='inputDateTo' type='date' onChange={(e) => { handleDateOnChange(e, setToDate) }} />
+                    </Stack>
+                </Stack>
 
                 <FormLabel>Utility Types</FormLabel>
                 <Form>
@@ -80,5 +86,5 @@ export default function Home() {
                 </Form>
             </Stack>
         </Container>
-    )
+    );
 }
